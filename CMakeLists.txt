@@ -1,11 +1,17 @@
-# Copyright (c) 2023, Roman Koch, koch.roman@gmail.com
+# SPDX-FileCopyrightText: 2023 Roman Koch <koch.roman@gmail.com>
 # SPDX-License-Identifier: MIT
 
 cmake_minimum_required(VERSION 3.22)
 
 set(SCRIPTS_DIR "${CMAKE_CURRENT_LIST_DIR}/.scripts")
 
-set(PICO_SDK_FETCH_FROM_GIT on)
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Firmware build type")
+endif()
+
+option(PICO_SDK_FETCH_FROM_GIT "Fetch the Pico SDK when PICO_SDK_PATH is unset" ON)
+# Raspberry Pi Pico SDK 2.3.1
+set(PICO_SDK_FETCH_FROM_GIT_TAG "079c6f39023649b154152db30f1d781e884879bc" CACHE STRING "Pico SDK revision")
 include(${SCRIPTS_DIR}/pico_sdk_import.cmake)
 include(${SCRIPTS_DIR}/pico_extras_import_optional.cmake)
 include(${SCRIPTS_DIR}/cpp_check.cmake)
@@ -20,14 +26,6 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-
-set(CMAKE_BUILD_TYPE Debug)
-
-include(CTest)
-enable_testing()
-
 pico_sdk_init()
 
 add_compile_options(
@@ -42,52 +40,40 @@ add_compile_options(
     -Waddress
     #-Wpedantic
     #-fpack-struct
-    -g
 )
 
-if (NOT HARDWARE_PLATFORM)
-    message(WARNING "platform is not defined, default is VARIKEY")
-    # set default hardware
-    # evailable platfroms are: VARIKEY, GMCI  
-    set(HARDWARE_PLATFORM "VARIKEY")
-endif()
-if (${HARDWARE_PLATFORM} STREQUAL "GMCI")
+set(HARDWARE_PLATFORM "VARIKEY" CACHE STRING "Keypad board")
+set_property(CACHE HARDWARE_PLATFORM PROPERTY STRINGS VARIKEY GMCI VARIKEY_15SBLA_PROTO)
+if(HARDWARE_PLATFORM STREQUAL "GMCI")
     set(HARDWARE_IDENTIFIER 2)
     set(HARDWARE_NUMBER 1)
     set(HARDWARE_VARIANT 0)
-elseif (${HARDWARE_PLATFORM} STREQUAL "VARIKEY")
+elseif(HARDWARE_PLATFORM STREQUAL "VARIKEY")
     set(HARDWARE_IDENTIFIER 1)
     set(HARDWARE_NUMBER 1)
     set(HARDWARE_VARIANT 0)
-elseif (${HARDWARE_PLATFORM} STREQUAL "VARIKEY_15SBLA_PROTO")
+elseif(HARDWARE_PLATFORM STREQUAL "VARIKEY_15SBLA_PROTO")
     set(HARDWARE_IDENTIFIER 3)
     set(HARDWARE_NUMBER 1)
     set(HARDWARE_VARIANT 0)
 else()
-    set(HARDWARE_IDENTIFIER 1)
-    set(HARDWARE_NUMBER 1)
-    set(HARDWARE_VARIANT 0)
+    message(FATAL_ERROR "Unsupported HARDWARE_PLATFORM: ${HARDWARE_PLATFORM}")
 endif()
 message(STATUS "platform is ${HARDWARE_PLATFORM} (internal ID:${HARDWARE_IDENTIFIER} NUM:${HARDWARE_NUMBER} VAR:${HARDWARE_VARIANT})")
 
-if (NOT FIRMWARE_PRODUCT)
-    message(WARNING "product is not defined, default is KEYPAD_DEMO")
-    # set default device name
-    # available devices are: KEYPAD_DEMO, KEYPAD_10BWDB
-    set(FIRMWARE_PRODUCT "KEYPAD_DEMO")
-endif()
-if (${FIRMWARE_PRODUCT} STREQUAL "KEYPAD_10BWDB")
+set(FIRMWARE_PRODUCT "KEYPAD_DEMO" CACHE STRING "Keypad firmware product")
+set_property(CACHE FIRMWARE_PRODUCT PROPERTY STRINGS KEYPAD_DEMO KEYPAD_10BWDB KEYPAD_15SBLA)
+if(FIRMWARE_PRODUCT STREQUAL "KEYPAD_10BWDB")
     set(FIRMWARE_IDENTIFIER 2)
     set(FIRMWARE_VENDOR 0xCAFE)
-elseif (${FIRMWARE_PRODUCT} STREQUAL "KEYPAD_DEMO")
+elseif(FIRMWARE_PRODUCT STREQUAL "KEYPAD_DEMO")
     set(FIRMWARE_IDENTIFIER 1)
     set(FIRMWARE_VENDOR 0xBEEF)
-elseif (${FIRMWARE_PRODUCT} STREQUAL "KEYPAD_15SBLA")
+elseif(FIRMWARE_PRODUCT STREQUAL "KEYPAD_15SBLA")
     set(FIRMWARE_IDENTIFIER 3)
     set(FIRMWARE_VENDOR 0xABCD)
 else()
-    set(FIRMWARE_IDENTIFIER 1)
-    set(FIRMWARE_VENDOR 0xBEEF)
+    message(FATAL_ERROR "Unsupported FIRMWARE_PRODUCT: ${FIRMWARE_PRODUCT}")
 endif()
 message(STATUS "product is ${FIRMWARE_PRODUCT} (internal ID:${FIRMWARE_IDENTIFIER} REV:${PROJECT_VERSION})")
 
@@ -99,8 +85,13 @@ SET(VARIKEY_LIBRARY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/${VARIKEY_LIBRARY_NAME}")
 string(TOLOWER ${VARIKEY_LIBRARY_NAME} VARIKEY_LIBRARY_NAME)
 
 set(GIT_HASH_SIZE 8)
-execute_process (COMMAND bash -c "git rev-parse --short=${GIT_HASH_SIZE} HEAD | tr -d '\n'" OUTPUT_VARIABLE GIT_HASH)
-configure_file(${SCRIPTS_DIR}/revision.h.in ${VARIKEY_LIBRARY_DIR}/revision.h @ONLY)
+set(GIT_HASH "00000000")
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/.git")
+    execute_process(COMMAND git rev-parse --short=${GIT_HASH_SIZE} HEAD
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+        OUTPUT_VARIABLE GIT_HASH OUTPUT_STRIP_TRAILING_WHITESPACE COMMAND_ERROR_IS_FATAL ANY)
+endif()
+configure_file("${SCRIPTS_DIR}/revision.h.in" "generated/revision.h" @ONLY)
 
 include(${SCRIPTS_DIR}/graffiti.cmake)
   
@@ -109,21 +100,6 @@ add_executable(${EXECUTABLE_NAME}
 )
 
 add_dependencies(${EXECUTABLE_NAME} ascii_art)
-
-if(NOT EXISTS "${VARIKEY_LIBRARY_DIR}/build_number.h")
-    execute_process(
-        COMMAND ${CMAKE_COMMAND} -P "${SCRIPTS_DIR}/build_number_inc.cmake"
-        WORKING_DIRECTORY "${SCRIPTS_DIR}/"
-    )
-else()
-    IF(CMAKE_BUILD_TYPE MATCHES "Release")
-        add_custom_command(        
-            TARGET ${EXECUTABLE_NAME}
-            COMMAND ${CMAKE_COMMAND} -P "${SCRIPTS_DIR}/build_number_inc.cmake"
-            WORKING_DIRECTORY "${SCRIPTS_DIR}/"
-        )
-    ENDIF(CMAKE_BUILD_TYPE MATCHES "Release")
-endif()
 
 add_subdirectory(${VARIKEY_LIBRARY_NAME})
 

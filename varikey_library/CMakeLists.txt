@@ -1,4 +1,4 @@
-# Copyright (c) 2025, Roman Koch, koch.roman@gmail.com
+# SPDX-FileCopyrightText: 2025 Roman Koch <koch.roman@gmail.com>
 # SPDX-License-Identifier: MIT
 
 set(LIBRARY_SOURCE_LIST
@@ -118,6 +118,7 @@ add_library(${VARIKEY_LIBRARY_NAME} ${LIBRARY_SOURCE_LIST})
 pico_generate_pio_header(${VARIKEY_LIBRARY_NAME} "${VARIKEY_LIBRARY_DIR}/platform/hardware/smartled/ws2812.pio")
 
 target_include_directories(${VARIKEY_LIBRARY_NAME} PUBLIC
+    ${PROJECT_BINARY_DIR}/generated
     ${VARIKEY_LIBRARY_DIR}/
     ${VARIKEY_LIBRARY_DIR}/engine/
     ${VARIKEY_LIBRARY_DIR}/engine/backlight/
