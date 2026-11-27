@@ -1,3 +1,6 @@
+<!-- SPDX-FileCopyrightText: 2023 HID Engage Laboratory -->
+<!-- SPDX-License-Identifier: MIT -->
+
 # VariKey
 
 The VaryKey platform is a customizable keyboard/keypad solution featuring a key matrix, microcontroller,
@@ -26,12 +29,11 @@ A small C++ program to control the backlight settings via USB HID.
 
 **Build and Run:**
 
-Navigate to the `host` directory and use the provided build script:
+From the repository root, build and run the demo:
 
 ```bash
-cd host
-./build_host_demo.sh
-./host_backlight_demo
+.scripts/build_host_demo.sh
+./host/host_backlight_demo
 ```
 
 The program will connect to the device and cycle through different backlight programs (SET, MORPH, ALARM, OFF).

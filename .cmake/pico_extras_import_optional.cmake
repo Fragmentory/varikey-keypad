@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2020 Raspberry Pi (Trading) Ltd.
+# SPDX-License-Identifier: BSD-3-Clause
+
 # This is a copy of <PICO_EXTRAS_PATH>/external/pico_extras_import.cmake
 
 # This can be dropped into an external project to help locate pico-extras

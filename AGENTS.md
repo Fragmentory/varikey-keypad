@@ -13,6 +13,8 @@ Sprich mit Roman auf Deutsch.
 - Jede neue oder angepasste Datei erhält eine SPDX-Kopfzeile in ihrer Kommentarsyntax. Bewahre die tatsächlichen Urheber und die Lizenz von Fremdcode.
 - Halte die Keypad-Repositories eigenständig. Geschützte PQ-Quellen und Zugangsdaten bleiben außerhalb dieser Repositories und ihrer CI.
 
+Lege ausführbare Projektskripte unter `.scripts/` und eingebundene CMake-Module unter `.cmake/` ab.
+
 ## Firmware
 
 Dieses Repository baut die RP2040-Firmware. Für den 15SBLA-Prototyp gehören `VARIKEY_15SBLA_PROTO` und `KEYPAD_15SBLA` zusammen. Andere unterstützte Varianten müssen weiterhin baubar bleiben.

@@ -3,6 +3,7 @@
 
 cmake_minimum_required(VERSION 3.22)
 
+set(CMAKE_MODULE_DIR "${CMAKE_CURRENT_LIST_DIR}/.cmake")
 set(SCRIPTS_DIR "${CMAKE_CURRENT_LIST_DIR}/.scripts")
 
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -12,9 +13,9 @@ endif()
 option(PICO_SDK_FETCH_FROM_GIT "Fetch the Pico SDK when PICO_SDK_PATH is unset" ON)
 # Raspberry Pi Pico SDK 2.3.1
 set(PICO_SDK_FETCH_FROM_GIT_TAG "079c6f39023649b154152db30f1d781e884879bc" CACHE STRING "Pico SDK revision")
-include(${SCRIPTS_DIR}/pico_sdk_import.cmake)
-include(${SCRIPTS_DIR}/pico_extras_import_optional.cmake)
-include(${SCRIPTS_DIR}/cpp_check.cmake)
+include("${CMAKE_MODULE_DIR}/pico_sdk_import.cmake")
+include("${CMAKE_MODULE_DIR}/pico_extras_import_optional.cmake")
+include("${CMAKE_MODULE_DIR}/cpp_check.cmake")
 
 project(varikey
     VERSION 1.1.0.2
@@ -93,7 +94,7 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/.git")
 endif()
 configure_file("${SCRIPTS_DIR}/revision.h.in" "generated/revision.h" @ONLY)
 
-include(${SCRIPTS_DIR}/graffiti.cmake)
+include("${CMAKE_MODULE_DIR}/graffiti.cmake")
   
 add_executable(${EXECUTABLE_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/src/firmware.cpp
@@ -115,3 +116,20 @@ target_link_libraries(${EXECUTABLE_NAME} PUBLIC
 # pico_enable_stdio_usb(${PROJECT_NAME} 0)
 pico_enable_stdio_uart(${EXECUTABLE_NAME} 1)
 pico_add_extra_outputs(${EXECUTABLE_NAME})
+
+if(NOT PICO_NO_UF2 AND NOT PICO_NO_PICOTOOL)
+    # The SDK's UF2 converter can be built without USB. Provision with a host tool.
+    find_program(VARIKEY_HOST_PICOTOOL NAMES picotool NO_CMAKE_FIND_ROOT_PATH)
+    set(provision_tool picotool)
+    if(VARIKEY_HOST_PICOTOOL)
+        set(provision_tool "${VARIKEY_HOST_PICOTOOL}")
+    endif()
+    add_custom_target(provision
+        COMMAND "${CMAKE_COMMAND}" -E env "PICOTOOL=${provision_tool}"
+                "${SCRIPTS_DIR}/provision.sh"
+                "$<TARGET_FILE_DIR:${EXECUTABLE_NAME}>/${EXECUTABLE_NAME}.uf2"
+        DEPENDS ${EXECUTABLE_NAME}
+        USES_TERMINAL
+        VERBATIM
+    )
+endif()

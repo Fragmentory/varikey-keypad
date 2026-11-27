@@ -6,8 +6,7 @@
 
 set -e
 
-# Wechsel in das Verzeichnis des Skripts, damit es von überall aus funktioniert
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/../host"
 
 # Prüfen, ob hidapi installiert ist
 if ! pkg-config --exists hidapi-hidraw; then
@@ -18,4 +17,4 @@ fi
 # Kompilieren
 g++ -std=c++17 -o host_backlight_demo host_backlight_demo.cpp $(pkg-config --cflags --libs hidapi-hidraw)
 
-echo "Build erfolgreich: ./host_backlight_demo"
+echo "Demo gebaut unter $PWD/host_backlight_demo"
