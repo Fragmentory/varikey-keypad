@@ -70,6 +70,8 @@ namespace engine::hci::cmd::control
         reset::message_t msg;
         reset::request(_chunk, &msg);
         reset::confirmation(&msg);
+        if (msg.result != reset::RESULT::SUCCESS)
+            return;
 
         const handler::event_t event = {
             .identifier = payload::IDENTIFIER::RESET,

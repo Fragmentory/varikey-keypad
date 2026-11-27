@@ -36,6 +36,9 @@
         HID_REPORT_SIZE(8),                                  \
         HID_REPORT_COUNT(12),                                \
         HID_FEATURE(HID_DATA | HID_VARIABLE | HID_ABSOLUTE), \
+        HID_USAGE(0x03),                                     \
+        HID_REPORT_COUNT(CFG_TUD_HID_EP_BUFSIZE - 1),        \
+        HID_OUTPUT(HID_DATA | HID_VARIABLE | HID_ABSOLUTE),  \
         HID_COLLECTION_END
 
 #define _PID_MAP(itf, n) ((CFG_TUD_##itf) << (n))

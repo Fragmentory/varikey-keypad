@@ -17,6 +17,12 @@ namespace engine::hid
         assert(_buffer.size <= MAX_REPORT_SIZE);
 
         report = static_cast<SET_REPORT>(_buffer.space[0]);
+        if (report == SET_REPORT::RESET)
+        {
+            reset = {};
+            reset.deserialize(_buffer.space + 1, _buffer.size - 1);
+            return;
+        }
         memcpy((void *)buffer, (void *)&_buffer.space[1], _buffer.size - 1);
     }
 

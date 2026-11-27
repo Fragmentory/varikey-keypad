@@ -25,6 +25,7 @@ set(LIBRARY_SOURCE_LIST
     ${VARIKEY_LIBRARY_DIR}/engine/display/resources/images/image_heart.c
     ${VARIKEY_LIBRARY_DIR}/engine/display/resources/images/image_varikey.c
     ${VARIKEY_LIBRARY_DIR}/engine/engine_event_handler.cpp
+    ${VARIKEY_LIBRARY_DIR}/engine/reset_control.cpp
     ${VARIKEY_LIBRARY_DIR}/engine/engine.cpp
     ${VARIKEY_LIBRARY_DIR}/engine/gpio/engine_gpio.cpp
     ${VARIKEY_LIBRARY_DIR}/engine/interface/hci/commander/cmd_control.cpp
@@ -167,6 +168,7 @@ target_link_libraries(${VARIKEY_LIBRARY_NAME} PUBLIC
     hardware_pio
     hardware_exception
     pico_stdlib
+    pico_bootrom
     pico_multicore
     tinyusb_board
     tinyusb_device

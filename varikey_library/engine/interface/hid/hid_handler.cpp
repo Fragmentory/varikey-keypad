@@ -24,6 +24,9 @@ namespace engine::hid
 
     extern void set_report_handler(const uint8_t _identifier, const const_chunk_t &_buffer)
     {
+        if (!_buffer.space || _buffer.size == 0 || _buffer.size > MAX_REPORT_SIZE)
+            return;
+
         set_report_t set_report;
         set_report.command = static_cast<platform::usb::COMMAND>(_identifier);
 
@@ -350,6 +353,8 @@ namespace engine::hid
                 break;
             case SET_REPORT::RESET:
             {
+                if (set_report.reset.function == payload::reset::FUNCTION::UNDEFINED)
+                    break;
                 const handler::event_t event = {
                     .identifier = payload::IDENTIFIER::RESET,
                     .reset = {

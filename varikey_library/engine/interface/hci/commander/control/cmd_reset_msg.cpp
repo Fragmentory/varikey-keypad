@@ -20,12 +20,13 @@ namespace engine::hci::cmd::reset
 
     extern void request(chunk_t const *const _chunk, message_t *const _msg)
     {
-        (void)_chunk;
         assert(_msg != NULL); // reset request message null
 
-        _msg->result = RESULT::SUCCESS;
-
-        _msg->content.deserialize(_chunk->space);
+        _msg->content.function = payload::reset::FUNCTION::UNDEFINED;
+        if (_chunk->size == 1)
+            _msg->content.deserialize(_chunk->space, _chunk->size);
+        _msg->result = _msg->content.function == payload::reset::FUNCTION::UNDEFINED
+                           ? RESULT::FAILURE : RESULT::SUCCESS;
 
         _msg->value.size = 0;
         _msg->value.space = 0;

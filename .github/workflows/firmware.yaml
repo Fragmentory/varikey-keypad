@@ -51,6 +51,13 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib libusb-1.0-0-dev
 
+    - name: Test firmware commands on the host
+      if: matrix.hardware == 'VARIKEY_15SBLA_PROTO'
+      run: |
+        cmake -S tests -B build/host-tests
+        cmake --build build/host-tests
+        ctest --test-dir build/host-tests --output-on-failure
+
     - name: Test factory provisioning without a device
       if: matrix.hardware == 'VARIKEY_15SBLA_PROTO'
       run: .scripts/test-provision.sh
@@ -71,6 +78,7 @@ jobs:
         test -s "${elf[0]}"
         test "${#uf2[@]}" -eq 1
         test -s "${uf2[0]}"
+        .scripts/test-hid-descriptor.py "${elf[0]}"
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4

@@ -8,24 +8,25 @@
 
 using namespace engine::payload::reset;
 
-void content_t::deserialize(uint8_t const *const _space)
+static FUNCTION decode_function(uint8_t byte)
 {
-    function = static_cast<const FUNCTION>(_space[0]);
-    if (!(function == FUNCTION::SHUTDOWN ||
-          function == FUNCTION::FORMAT))
+    switch (static_cast<FUNCTION>(byte))
     {
-        function = FUNCTION::UNDEFINED;
+    case FUNCTION::SHUTDOWN:
+    case FUNCTION::FORMAT:
+    case FUNCTION::BOOTSEL:
+        return static_cast<FUNCTION>(byte);
+    default:
+        return FUNCTION::UNDEFINED;
     }
 }
-void content_t::serialize(uint8_t **_ptr) const
+
+void content_t::deserialize(uint8_t const *data, size_t size)
 {
-    if ((function == FUNCTION::SHUTDOWN ||
-         function == FUNCTION::FORMAT))
-    {
-        *(*_ptr)++ = (uint8_t)function;
-    }
-    else
-    {
-        *(*_ptr)++ = (uint8_t)FUNCTION::UNDEFINED;
-    }
+    function = data && size ? decode_function(data[0]) : FUNCTION::UNDEFINED;
+}
+
+void content_t::serialize(uint8_t **cursor) const
+{
+    *(*cursor)++ = static_cast<uint8_t>(decode_function(static_cast<uint8_t>(function)));
 }

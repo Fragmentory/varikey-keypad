@@ -8,4 +8,5 @@
 
 extern void varikey_loop(void);
 extern void varikey_shutdown(void);
+extern void varikey_enter_bootsel(void);
 

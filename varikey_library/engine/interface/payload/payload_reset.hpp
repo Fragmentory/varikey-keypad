@@ -19,6 +19,7 @@ namespace engine::payload::reset
     {
         SHUTDOWN = common::function::CUSTOM,
         FORMAT = common::function::CUSTOM + 1,
+        BOOTSEL = common::function::CUSTOM + 2,
 
         UNDEFINED = to_underlying(payload::IDENTIFIER::UNDEFINED),
     };
@@ -28,7 +29,7 @@ namespace engine::payload::reset
         FUNCTION function;
 
         const size_t size100() const { return 2; }
-        void deserialize(uint8_t const *const);
+        void deserialize(uint8_t const *data, size_t size);
         void serialize(uint8_t **) const;
     };
 }

@@ -17,7 +17,7 @@
 #include "keypad_mapping.hpp"
 #include "keypad_modifiers.hpp"
 #include "usb_descriptors.hpp"
-#include "varikey.hpp"
+#include "reset_control.hpp"
 
 namespace engine::handler
 {
@@ -278,13 +278,7 @@ namespace engine::handler
         case payload::IDENTIFIER::PARAMETER:
             break;
         case payload::IDENTIFIER::RESET:
-            if (_event.reset.function == engine::payload::reset::FUNCTION::FORMAT)
-            {
-                registry::parameter::param_format();
-            }
-
-            varikey_shutdown();
-
+            reset_control::handle(_event.reset.function);
             break;
         default:
             break;

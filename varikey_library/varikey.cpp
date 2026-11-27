@@ -11,6 +11,9 @@
 #include "keymatrix_queue.hpp"
 #include "keymatrix_scanner.hpp"
 
+#include "reset_control.hpp"
+
+#include <pico/bootrom.h>
 #include <pico/multicore.h>
 
 volatile bool scan_enabled = true;
@@ -55,7 +58,13 @@ extern void varikey_loop(void)
 
     while (running_varikey)
     {
+        engine::reset_control::perform();
     }
+}
+
+void varikey_enter_bootsel(void)
+{
+    rom_reset_usb_boot(0, 0);
 }
 
 extern void varikey_shutdown(void)
