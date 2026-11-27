@@ -1,0 +1,16 @@
+/* SPDX-FileCopyrightText: 2026 Roman Koch
+ * SPDX-License-Identifier: MIT
+ */
+__keypad_service_record = @flash_base@ + @service_offset@;
+__keypad_settings_a = @flash_base@ + @settings_a_offset@;
+__keypad_settings_b = @flash_base@ + @settings_b_offset@;
+
+ASSERT(ORIGIN(FLASH) == @flash_base@ && LENGTH(FLASH) == @flash_bytes@,
+       "Keypad flash profile does not match the SDK board")
+ASSERT(__flash_binary_end <= __keypad_service_record,
+       "Keypad application overlaps the service record")
+ASSERT(@service_offset@ % @erase_bytes@ == 0 &&
+       @settings_a_offset@ == @service_offset@ + @erase_bytes@ &&
+       @settings_b_offset@ == @settings_a_offset@ + @erase_bytes@ &&
+       @settings_b_offset@ + @erase_bytes@ == @flash_bytes@,
+       "Invalid keypad persistent flash layout")

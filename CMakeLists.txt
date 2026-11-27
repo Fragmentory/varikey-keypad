@@ -115,9 +115,25 @@ target_link_libraries(${EXECUTABLE_NAME} PUBLIC
 
 # pico_enable_stdio_usb(${PROJECT_NAME} 0)
 pico_enable_stdio_uart(${EXECUTABLE_NAME} 1)
+set(flash_profile "${CMAKE_CURRENT_SOURCE_DIR}/boards/rp2040-2m-flash.json")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${flash_profile}")
+file(READ "${flash_profile}" flash_layout)
+foreach(field flash_base flash_bytes erase_bytes service_offset settings_a_offset settings_b_offset)
+    string(JSON ${field} GET "${flash_layout}" "${field}")
+endforeach()
+set(flash_limits "${CMAKE_CURRENT_BINARY_DIR}/keypad-flash.ld")
+configure_file("${CMAKE_MODULE_DIR}/keypad-flash.ld.in" "${flash_limits}" @ONLY)
+target_link_options(${EXECUTABLE_NAME} PRIVATE "LINKER:-T,${flash_limits}")
+set_property(TARGET ${EXECUTABLE_NAME} APPEND PROPERTY LINK_DEPENDS "${flash_limits}")
 pico_add_extra_outputs(${EXECUTABLE_NAME})
 
 if(NOT PICO_NO_UF2 AND NOT PICO_NO_PICOTOOL)
+    set(application_uf2 "$<TARGET_FILE_DIR:${EXECUTABLE_NAME}>/${EXECUTABLE_NAME}.uf2")
+    add_custom_command(TARGET ${EXECUTABLE_NAME} POST_BUILD
+        COMMAND "${SCRIPTS_DIR}/check-uf2.py" "${application_uf2}"
+        COMMENT "Check all UF2 pages against the keypad application area"
+        VERBATIM)
+    set_property(TARGET ${EXECUTABLE_NAME} APPEND PROPERTY LINK_DEPENDS "${SCRIPTS_DIR}/check-uf2.py")
     # The SDK's UF2 converter can be built without USB. Provision with a host tool.
     find_program(VARIKEY_HOST_PICOTOOL NAMES picotool NO_CMAKE_FIND_ROOT_PATH)
     set(provision_tool picotool)
@@ -127,7 +143,7 @@ if(NOT PICO_NO_UF2 AND NOT PICO_NO_PICOTOOL)
     add_custom_target(provision
         COMMAND "${CMAKE_COMMAND}" -E env "PICOTOOL=${provision_tool}"
                 "${SCRIPTS_DIR}/provision.sh"
-                "$<TARGET_FILE_DIR:${EXECUTABLE_NAME}>/${EXECUTABLE_NAME}.uf2"
+                "${application_uf2}"
         DEPENDS ${EXECUTABLE_NAME}
         USES_TERMINAL
         VERBATIM

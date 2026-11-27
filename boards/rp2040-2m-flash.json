@@ -1,0 +1,10 @@
+{
+  "SPDX-FileCopyrightText": "2026 Roman Koch",
+  "SPDX-License-Identifier": "MIT",
+  "flash_base": "0x10000000",
+  "flash_bytes": "0x200000",
+  "erase_bytes": "0x1000",
+  "service_offset": "0x1fd000",
+  "settings_a_offset": "0x1fe000",
+  "settings_b_offset": "0x1ff000"
+}

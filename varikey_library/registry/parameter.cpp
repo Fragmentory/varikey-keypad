@@ -27,14 +27,12 @@
 namespace registry::parameter
 {
 
-#define REGISTRY_OFFSET (FLASH_PAGE_SIZE * 4096)
-#define REGISTRY_FLASH_START (XIP_BASE + REGISTRY_OFFSET)
-#define REGISTRY_BACKUP_OFFSET (REGISTRY_OFFSET + FLASH_SECTOR_SIZE)
-#define REGISTRY_BACKUP_FLASH_START (XIP_BASE + REGISTRY_BACKUP_OFFSET)
+    extern "C" uint8_t __keypad_settings_a[];
+    extern "C" uint8_t __keypad_settings_b[];
 
 #define PARAM_CONTENT_OFFSET 2
 
-    uint8_t *const registry_start = (uint8_t *)REGISTRY_FLASH_START;
+    uint8_t *const registry_start = __keypad_settings_a;
 
     uint8_t *const param_start = registry_start;
     uint8_t *const g_param_backlight = param_start;
@@ -49,7 +47,7 @@ namespace registry::parameter
     uint8_t *const param_crc = (uint8_t *)(g_param_user + PARAM_CONTENT_OFFSET + sizeof(user::register_t));
     uint8_t *const param_stop = (uint8_t *)(param_crc + sizeof(uint16_t));
 
-    uint8_t *const backup_start = (uint8_t *)REGISTRY_BACKUP_FLASH_START;
+    uint8_t *const backup_start = __keypad_settings_b;
     uint8_t *const backup_backlight = backup_start;
     uint8_t *const backup_display = (uint8_t *)(backup_backlight + PARAM_CONTENT_OFFSET + sizeof(backlight::register_t));
     uint8_t *const backup_features = (uint8_t *)(backup_display + PARAM_CONTENT_OFFSET + sizeof(display::register_t));
@@ -119,7 +117,7 @@ namespace registry::parameter
     {
 
         uint32_t ints = save_and_disable_interrupts();
-        flash_range_erase(REGISTRY_OFFSET, FLASH_SECTOR_SIZE);
+        flash_range_erase(reinterpret_cast<uintptr_t>(registry_start) - XIP_BASE, FLASH_SECTOR_SIZE);
         restore_interrupts(ints);
 
         backlight::g_register.initialize();

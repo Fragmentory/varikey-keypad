@@ -26,6 +26,14 @@ if ! command -v "$tool" >/dev/null; then
     exit 1
 fi
 
+# Inspect and program the same private copy even if a build replaces the input.
+scripts=$(dirname "$(realpath "$0")")
+scratch=$(mktemp -d)
+trap 'rm -rf "$scratch"' EXIT
+cp -- "$image" "$scratch/keypad.uf2"
+image=$scratch/keypad.uf2
+"$scripts/check-uf2.py" "$image"
+
 # Inspect the file offline so an application linked at an offset cannot be
 # mistaken for the factory image used to boot a blank RP2040.
 metadata=$("$tool" info -a "$image") || { echo "$metadata" >&2; exit 1; }
@@ -33,4 +41,4 @@ if ! grep -Eq '^[[:space:]]*binary start:[[:space:]]+0x10000000[[:space:]]*$' <<
     echo "Expected a factory image linked at flash base 0x10000000." >&2
     exit 1
 fi
-exec "$tool" load -v -x "$image" "${device[@]}"
+"$tool" load -v -x "$image" "${device[@]}"
