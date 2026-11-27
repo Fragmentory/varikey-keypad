@@ -14,3 +14,20 @@ target_include_directories(reset_command_test PRIVATE "${lib}" "${lib}/pulp" "${
     "${lib}/engine" "${interface}/payload" "${interface}/hci/commander"
     "${interface}/hci/commander/control" "${interface}/hci/serial")
 add_test(NAME reset_command COMMAND reset_command_test)
+
+set(scanner "${lib}/platform/hardware/keymatrix/scanner")
+add_executable(panel15_test panel15_test.cpp)
+target_compile_features(panel15_test PRIVATE cxx_std_20)
+target_include_directories(panel15_test PRIVATE "${scanner}" "${lib}/engine/keypad")
+add_test(NAME panel15 COMMAND panel15_test)
+
+set(core "${lib}/platform/hardware/keymatrix/core")
+add_executable(panel15_input_test panel15_input_test.cpp "${core}/keymatrix_handler_type_varikey_15sbla.cpp")
+target_compile_features(panel15_input_test PRIVATE cxx_std_20)
+target_include_directories(panel15_input_test PRIVATE "${scanner}" "${core}" "${lib}/engine/keypad")
+add_test(NAME panel15_input COMMAND panel15_input_test)
+
+add_executable(panel15_preset_test panel15_preset_test.cpp "${interface}/payload/payload_keypad.cpp")
+target_compile_features(panel15_preset_test PRIVATE cxx_std_20)
+target_include_directories(panel15_preset_test PRIVATE "${interface}/payload" "${lib}/engine/keypad" "${lib}/pulp")
+add_test(NAME panel15_preset COMMAND panel15_preset_test)

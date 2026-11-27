@@ -6,13 +6,12 @@
 
 #pragma once
 
-#include "keypad_key_state.hpp"
+#include "keypad_input.hpp"
 #include "keypad_mapping.hpp"
 #include "keypad_modifiers.hpp"
 
 namespace engine::keypad
 {
-    extern void switch_key(const key::Identifier, const key::State);
     extern void press_key(const key::Identifier);
     extern void release_key(const key::Identifier);
 

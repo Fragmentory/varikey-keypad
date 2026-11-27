@@ -6,6 +6,7 @@
 
 #include "keymatrix_core.hpp"
 #include "keymatrix_queue.hpp"
+#include "matrix15_geometry.hpp"
 
 namespace platform::hardware
 {
@@ -37,14 +38,7 @@ namespace platform::hardware
             {
                 *_state = 0xff; // Unbekannter Zustand
             }
-            if (event.row > 0 && event.row <= 3 && event.col > 0 && event.col <= 5)
-            {
-                *_identifier = static_cast<uint8_t>((event.col - 1) * 3 + event.row);
-            }
-            else
-            {
-                *_identifier = 0; // Ungültiges Ereignis
-            }
+            *_identifier = engine::keypad::matrix15::switch_number(event.row, event.col);
         }
     }
 }

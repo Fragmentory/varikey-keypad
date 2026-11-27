@@ -12,8 +12,10 @@
 #include "keymatrix.hpp"
 #include "keymatrix_queue.hpp"
 
-#define NUM_ROWS 3
-#define NUM_COLS 5
+#include "matrix15_geometry.hpp"
+
+constexpr int NUM_ROWS = engine::keypad::matrix15::drive_lines;
+constexpr int NUM_COLS = engine::keypad::matrix15::sense_lines;
 #define DEBOUNCE_TICKS 0
 
 const uint8_t row_pins[NUM_ROWS] = {2, 3, 4};

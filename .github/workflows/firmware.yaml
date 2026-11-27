@@ -33,6 +33,8 @@ jobs:
         include:
           - hardware: VARIKEY_15SBLA_PROTO
             product: KEYPAD_15SBLA
+          - hardware: VARIKEY_15SBLA_PROTO
+            product: KEYPAD_PANEL15
     runs-on: ubuntu-24.04
 
     steps:
@@ -78,7 +80,9 @@ jobs:
         test -s "${elf[0]}"
         test "${#uf2[@]}" -eq 1
         test -s "${uf2[0]}"
-        .scripts/test-hid-descriptor.py "${elf[0]}"
+        args=()
+        if [[ "${{ matrix.product }}" == KEYPAD_PANEL15 ]]; then args+=(--panel15); fi
+        .scripts/test-hid-descriptor.py "${elf[0]}" "${args[@]}"
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4

@@ -12,6 +12,7 @@
 #include "platform_defines.hpp"
 #include "revision.h"
 #include "usb_descriptors.hpp"
+#include "panel15.hpp"
 
 #include "chunk.h"
 #include "hid_handler.hpp"
@@ -79,6 +80,14 @@ uint8_t const desc_hid_report[] = {
     TUD_HID_REPORT_DESC_MOUSE(HID_REPORT_ID(static_cast<uint8_t>(platform::usb::COMMAND::MOUSE))),
     TUD_HID_REPORT_DESC_CONSUMER(HID_REPORT_ID(static_cast<uint8_t>(platform::usb::COMMAND::CONSUMER))),
     TUD_HID_REPORT_DESC_CUSTOM(HID_REPORT_ID(static_cast<uint8_t>(platform::usb::COMMAND::CUSTOM))),
+#ifdef VARIKEY_PANEL15
+    HID_USAGE_PAGE_N(HID_USAGE_PAGE_VENDOR, 2), HID_USAGE(0xa1),
+    HID_COLLECTION(HID_COLLECTION_APPLICATION),
+    HID_REPORT_ID(engine::keypad::panel15::report_id)
+    HID_USAGE(1), HID_LOGICAL_MIN(0), HID_LOGICAL_MAX_N(255, 2),
+    HID_REPORT_SIZE(8), HID_REPORT_COUNT(engine::keypad::panel15::capabilities.size()),
+    HID_FEATURE(HID_DATA | HID_VARIABLE | HID_ABSOLUTE), HID_COLLECTION_END,
+#endif
 };
 
 uint8_t const *tud_hid_descriptor_report_cb(uint8_t instance)
@@ -305,6 +314,15 @@ uint16_t tud_hid_get_report_cb(uint8_t instance,
                                uint16_t bufsize)
 {
     (void)instance;
+
+    if (report_id == engine::keypad::panel15::report_id)
+    {
+#ifdef VARIKEY_PANEL15
+        if (report_type == HID_REPORT_TYPE_FEATURE)
+            return engine::keypad::panel15::write_hid(buffer, bufsize);
+#endif
+        return 0;
+    }
 
     if (report_type == HID_REPORT_TYPE_FEATURE)
     {

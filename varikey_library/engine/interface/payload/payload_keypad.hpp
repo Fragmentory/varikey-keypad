@@ -10,7 +10,8 @@
 
 #include "macros.hpp"
 
-#include "keypad_mapping.hpp"
+#include "keypad_key_identifier.hpp"
+#include "keypad_table.hpp"
 #include "keypad_modifiers.hpp"
 #include "payload_identifier.hpp"
 

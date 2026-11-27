@@ -12,6 +12,8 @@
 #include "cmd_setting.hpp"
 #include "commander.hpp"
 #include "macros.hpp"
+#include "panel15.hpp"
+#include "serial_frame.hpp"
 
 namespace engine::hci
 {
@@ -27,6 +29,18 @@ namespace engine::hci
         switch (command)
         {
 
+#ifdef VARIKEY_PANEL15
+        case COMMAND::CAPABILITIES_REQ:
+        {
+            keypad::panel15::HciReply bytes{};
+            const auto length = keypad::panel15::write_hci(sdu.size, bytes);
+            if (!length)
+                return cmd::protocol::RESULT::INVALID_COMMAND;
+            const chunk_t reply{bytes.data(), length};
+            serial::frame::send(INTERPRETER_ADDRESS, &reply);
+            break;
+        }
+#endif
         case COMMAND::GADGET_REQ:
             cmd::control::gadget_request(&sdu);
             break;

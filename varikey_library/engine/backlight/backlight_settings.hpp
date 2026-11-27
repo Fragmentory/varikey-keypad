@@ -39,6 +39,11 @@ namespace engine::backlight
         {
             using Settings = engine::backlight::settings::Varikey15SBLA;
         };
+
+        template <>
+        struct Entity<engine::defines::Identifier::KEYPAD_PANEL15> : Entity<engine::defines::Identifier::KEYPAD_15SBLA>
+        {
+        };
     }
     using Settings = engine::backlight::variant::Entity<engine::defines::Identifier(identity::firmware::IDENTIFIER)>::Settings;
 }

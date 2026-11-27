@@ -53,7 +53,8 @@ void content_t::deserialize(uint8_t const *const _space)
         if (function == FUNCTION::SET)
         {
             table = static_cast<const TABLE>(_space[2]);
-            if (!(table == TABLE::CUSTOM ||
+            if (!(table == TABLE::PANEL15 ||
+                  table == TABLE::CUSTOM ||
                   table == TABLE::FUNCTIONAL ||
                   table == TABLE::MULTIMEDIA ||
                   table == TABLE::NAVIGATION ||
