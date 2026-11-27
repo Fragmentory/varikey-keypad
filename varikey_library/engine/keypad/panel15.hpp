@@ -7,38 +7,22 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "keypad_layout.hpp"
 #include "matrix15_geometry.hpp"
 
 namespace engine::keypad::panel15
 {
-    enum Area { soft, hard, function, left, center, right, area_count };
-    struct Key
-    {
-        Area area;
-        uint8_t usage; // USB HID Keyboard/Keypad page (0x07)
-    };
+    using layout::Area;
+    using layout::Key;
 
     // Indexed by electrical switch number minus one.
     inline constexpr std::array keys{
-        Key{soft, 0x3e}, Key{soft, 0x3d}, Key{soft, 0x3c}, Key{soft, 0x3b}, Key{soft, 0x3a},
-        Key{function, 0x4b}, Key{function, 0x4e}, Key{left, 0x49},
-        Key{center, 0x50}, Key{center, 0x52}, Key{center, 0x51}, Key{center, 0x4f},
-        Key{right, 0x2c}, Key{right, 0x28}, Key{right, 0x4a}
+        Key{Area::soft, 0x3e}, Key{Area::soft, 0x3d}, Key{Area::soft, 0x3c}, Key{Area::soft, 0x3b}, Key{Area::soft, 0x3a},
+        Key{Area::function, 0x4b}, Key{Area::function, 0x4e}, Key{Area::left, 0x49},
+        Key{Area::center, 0x50}, Key{Area::center, 0x52}, Key{Area::center, 0x51}, Key{Area::center, 0x4f},
+        Key{Area::right, 0x2c}, Key{Area::right, 0x28}, Key{Area::right, 0x4a}
     };
-    static_assert(keys.size() <= matrix15::capacity);
-
-    inline constexpr auto capabilities = [] {
-        std::array<uint16_t, area_count> counts{};
-        for (auto key : keys)
-            ++counts[key.area];
-        std::array<uint8_t, 15> bytes{1, matrix15::capacity & 0xff, matrix15::capacity >> 8};
-        for (unsigned i = 0; i < counts.size(); ++i)
-        {
-            bytes[3 + 2*i] = counts[i] & 0xff;
-            bytes[4 + 2*i] = counts[i] >> 8;
-        }
-        return bytes;
-    }();
+    inline constexpr auto capabilities = layout::describe<matrix15::capacity>(keys);
 
     constexpr uint8_t report_id = 0xe1;
     inline uint16_t write_hid(uint8_t *buffer, std::size_t size)

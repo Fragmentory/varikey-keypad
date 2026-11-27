@@ -7,6 +7,7 @@
 int main()
 {
     using namespace engine::keypad::panel15;
+    using engine::keypad::layout::describe;
     using engine::keypad::matrix15::switch_number;
     constexpr std::array<unsigned, 15> usages{
         0x3e,0x3d,0x3c,0x3b,0x3a,0x4b,0x4e,0x49,0x50,0x52,0x51,0x4f,0x2c,0x28,0x4a};
@@ -27,5 +28,13 @@ int main()
     if (write_hci(1, reply) || write_hci(0, reply) != 16 || reply[0] != 0x31 ||
         !std::equal(expected.begin(), expected.end(), reply.begin() + 1))
         return 4;
+    // A different scanner can populate every position in one area or leave positions free.
+    std::array<Key, 300> large{};
+    large.fill({Area::hard, 0x28});
+    const auto full = describe<300>(large);
+    const auto sparse = describe<512>(large);
+    if (full != std::array<uint8_t,15>{1,44,1,0,0,44,1} ||
+        sparse != std::array<uint8_t,15>{1,0,2,0,0,44,1})
+        return 5;
     return capabilities != expected;
 }
