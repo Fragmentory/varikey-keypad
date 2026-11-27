@@ -1,0 +1,116 @@
+// SPDX-FileCopyrightText: 2023 Roman Koch <koch.roman@gmail.com>
+// SPDX-License-Identifier: MIT
+// SPDX-FileContributor: Roman Koch <koch.roman@gmail.com>
+// SPDX-FileComment: Hardware keymatrix functionality
+// SPDX-FileType: SOURCE
+
+#include <cstdio>
+#include <cstring>
+
+#include <pico/time.h>
+
+#include "keymatrix.hpp"
+#include "keymatrix_queue.hpp"
+
+#define NUM_ROWS 3
+#define NUM_COLS 5
+#define DEBOUNCE_TICKS 0
+
+const uint8_t row_pins[NUM_ROWS] = {2, 3, 4};
+const uint8_t col_pins[NUM_COLS] = {17, 18, 19, 20, 21};
+
+uint8_t debounce_counter[NUM_ROWS][NUM_COLS] = {0};
+
+bool key_now[NUM_ROWS][NUM_COLS] = {0};
+bool key_last[NUM_ROWS][NUM_COLS] = {0};
+
+void keymatrix_init(void)
+{
+    for (int r = 0; r < NUM_ROWS; ++r)
+    {
+        gpio_init(row_pins[r]);
+        gpio_set_dir(row_pins[r], GPIO_OUT);
+        gpio_put(row_pins[r], 0);
+    }
+    for (int c = 0; c < NUM_COLS; ++c)
+    {
+        gpio_init(col_pins[c]);
+        gpio_set_dir(col_pins[c], GPIO_IN);
+        gpio_pull_down(col_pins[c]);
+    }
+}
+
+void keymatrix_scan(void)
+{
+    for (int r = 0; r < NUM_ROWS; ++r)
+    {
+        gpio_put(row_pins[r], 1);
+        sleep_us(5);
+
+        for (int c = 0; c < NUM_COLS; ++c)
+        {
+            const bool status = (gpio_get(col_pins[c]) == 1);
+            gpio_put(25, status);
+
+            const bool previous = key_now[r][c];
+
+            if (status != previous)
+            {
+                debounce_counter[r][c]++;
+                if (debounce_counter[r][c] >= DEBOUNCE_TICKS)
+                {
+                    key_now[r][c] = status;
+
+                    debounce_counter[r][c] = 0;
+                }
+            }
+            else
+            {
+                debounce_counter[r][c] = 0;
+            }
+        }
+
+        gpio_put(row_pins[r], 0);
+
+        // Aktives Entladen: alle COLs kurz auf Output und 0
+        for (int c = 0; c < NUM_COLS; ++c)
+        {
+            gpio_set_dir(col_pins[c], GPIO_OUT);
+            gpio_put(col_pins[c], 0);
+        }
+        sleep_us(10); // gib C Zeit zum Entladen (Wert ggf. anpassen)
+
+        // Danach wieder Input und Pull-Down aktivieren
+        for (int c = 0; c < NUM_COLS; ++c)
+        {
+            gpio_set_dir(col_pins[c], GPIO_IN);
+            gpio_pull_down(col_pins[c]);
+        }
+
+        sleep_us(5);
+    }
+}
+
+void keymatrix_events(void)
+{
+    for (uint8_t c = 0; c < NUM_COLS; ++c)
+    {
+        for (uint8_t r = 0; r < NUM_ROWS; ++r)
+        {
+            const uint8_t col_idx = static_cast<uint8_t>(c + 1);
+            const uint8_t row_idx = static_cast<uint8_t>(r + 1);
+
+            const bool now = key_now[r][c];
+            const bool last = key_last[r][c];
+
+            if (now != last)
+            {
+                key_last[r][c] = now; // ← wichtig: sofort aktualisieren
+
+                keymatrix::KeyEvent::Type event_type = now ? keymatrix::KeyEvent::Type::PRESS : keymatrix::KeyEvent::Type::RELEASE;
+                keymatrix::KeyEvent tmp_event(event_type, row_idx, col_idx);
+                keymatrix::push_event(tmp_event);
+            }
+        }
+    }
+}
