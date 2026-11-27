@@ -21,6 +21,7 @@ namespace engine
             KEYPAD_DEMO = 1,
             KEYPAD_10BWDB = 2,
             KEYPAD_15SBLA = 3,
+            KEYPAD_PANEL15 = 4,
         };
 
         enum class STATE : uint8_t

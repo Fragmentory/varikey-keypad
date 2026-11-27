@@ -18,6 +18,7 @@ for line in symbols.splitlines():
 
 offset = address - flash_base
 descriptor = elf.with_suffix(".bin").read_bytes()[offset:offset + length]
+feature_bits = 0
 cursor = 0
 report_id = report_size = report_count = output_bits = 0
 while cursor < len(descriptor):
@@ -33,7 +34,12 @@ while cursor < len(descriptor):
         report_count = value
     elif item == 0x90 and report_id == 0xe0 and not value & 1:  # Data Output
         output_bits += report_size * report_count
+    elif item == 0xb0 and report_id == 0xe1 and not value & 1:
+        feature_bits += report_size * report_count
     cursor += size + 1
 
 if output_bits != 63 * 8:
     sys.exit(f"HID output report 0xe0 has {output_bits} data bits, expected 63 bytes")
+
+if "--panel15" in sys.argv and feature_bits != 15 * 8:
+    sys.exit(f"HID feature report 0xe1 has {feature_bits} data bits, expected 15 bytes")

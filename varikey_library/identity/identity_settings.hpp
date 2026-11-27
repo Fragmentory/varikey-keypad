@@ -39,6 +39,11 @@ namespace identity
         {
             using Settings = engine::identity::Identity15SBLA;
         };
+
+        template <>
+        struct Entity<engine::defines::Identifier::KEYPAD_PANEL15> : Entity<engine::defines::Identifier::KEYPAD_15SBLA>
+        {
+        };
     }
     using Settings = identity::variant::Entity<engine::defines::Identifier(identity::firmware::IDENTIFIER)>::Settings;
 }

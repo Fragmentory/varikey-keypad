@@ -17,6 +17,7 @@ namespace engine::keypad
     {
         CUSTOM = 0x05,
         EMBEDDED_BOX = 0x06,
+        PANEL15 = 0x07,
         FUNCTIONAL = 0x01,
         MULTIMEDIA = 0x04,
         NAVIGATION = 0x02,

@@ -7,7 +7,8 @@
 #include "keymatrix_handler_type_varikey_15sbla.hpp"
 #include "keymatrix_core_event.hpp"
 #include "keymatrix_core_handler.hpp"
-#include "keypad.hpp"
+#include "keypad_input.hpp"
+#include "matrix15_geometry.hpp"
 
 namespace platform::hardware
 {
@@ -28,57 +29,9 @@ namespace platform::hardware
 
     void KeymatrixHandlerVarikey15SBLA::event_handler(const platform::hardware::pico::event_t _event)
     {
-        switch (_event.identifier)
-        {
-        case platform::hardware::pico::event::IDENTIFIER::UNDEFINED:
-            break;
-        case platform::hardware::pico::event::IDENTIFIER::R1_C1:
-            engine::keypad::switch_key(engine::keypad::key::Identifier::KEY_01, get_key_state(_event.state));
-            break;
-        case platform::hardware::pico::event::IDENTIFIER::R1_C2:
-            engine::keypad::switch_key(engine::keypad::key::Identifier::KEY_02, get_key_state(_event.state));
-            break;
-        case platform::hardware::pico::event::IDENTIFIER::R1_C3:
-            engine::keypad::switch_key(engine::keypad::key::Identifier::KEY_03, get_key_state(_event.state));
-            break;
-        case platform::hardware::pico::event::IDENTIFIER::R1_C4:
-            engine::keypad::switch_key(engine::keypad::key::Identifier::KEY_04, get_key_state(_event.state));
-            break;
-        case platform::hardware::pico::event::IDENTIFIER::R1_C5:
-            engine::keypad::switch_key(engine::keypad::key::Identifier::KEY_05, get_key_state(_event.state));
-            break;
-        case platform::hardware::pico::event::IDENTIFIER::R2_C1:
-            engine::keypad::switch_key(engine::keypad::key::Identifier::KEY_06, get_key_state(_event.state));
-            break;
-        case platform::hardware::pico::event::IDENTIFIER::R2_C2:
-            engine::keypad::switch_key(engine::keypad::key::Identifier::KEY_07, get_key_state(_event.state));
-            break;
-        case platform::hardware::pico::event::IDENTIFIER::R2_C3:
-            engine::keypad::switch_key(engine::keypad::key::Identifier::KEY_08, get_key_state(_event.state));
-            break;
-        case platform::hardware::pico::event::IDENTIFIER::R2_C4:
-            engine::keypad::switch_key(engine::keypad::key::Identifier::KEY_09, get_key_state(_event.state));
-            break;
-        case platform::hardware::pico::event::IDENTIFIER::R2_C5:
-            engine::keypad::switch_key(engine::keypad::key::Identifier::KEY_10, get_key_state(_event.state));
-            break;
-        case platform::hardware::pico::event::IDENTIFIER::R3_C1:
-            engine::keypad::switch_key(engine::keypad::key::Identifier::KEY_11, get_key_state(_event.state));
-            break;
-        case platform::hardware::pico::event::IDENTIFIER::R3_C2:
-            engine::keypad::switch_key(engine::keypad::key::Identifier::KEY_12, get_key_state(_event.state));
-            break;
-        case platform::hardware::pico::event::IDENTIFIER::R3_C3:
-            engine::keypad::switch_key(engine::keypad::key::Identifier::KEY_13, get_key_state(_event.state));
-            break;
-        case platform::hardware::pico::event::IDENTIFIER::R3_C4:
-            engine::keypad::switch_key(engine::keypad::key::Identifier::KEY_14, get_key_state(_event.state));
-            break;
-        case platform::hardware::pico::event::IDENTIFIER::R3_C5:
-            engine::keypad::switch_key(engine::keypad::key::Identifier::KEY_15, get_key_state(_event.state));
-            break;
-        default:
-            break;
-        }
+        const auto number = _event.switch_number;
+        const auto state = get_key_state(_event.state);
+        if (number && number <= engine::keypad::matrix15::capacity && state != engine::keypad::key::State::UNDEFINED)
+            engine::keypad::switch_key(static_cast<engine::keypad::key::Identifier>(number - 1), state);
     }
 }

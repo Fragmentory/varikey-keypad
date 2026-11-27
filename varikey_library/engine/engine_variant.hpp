@@ -35,6 +35,15 @@ namespace engine
         };
 
         template <>
+        struct Entity<engine::defines::Identifier::KEYPAD_PANEL15> : Entity<engine::defines::Identifier::KEYPAD_15SBLA>
+        {
+            struct Type : engine::defines::Varikey15SBLA
+            {
+                static constexpr auto DEFAULT_MAPPING_TABLE = keypad::TABLE::PANEL15;
+            };
+        };
+
+        template <>
         struct Entity<engine::defines::Identifier::KEYPAD_10BWDB>
         {
             using Type = engine::defines::Gmci;

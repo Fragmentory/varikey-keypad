@@ -12,6 +12,7 @@
 #include "keypad_mapping.hpp"
 #include "keypad_modifiers.hpp"
 #include "param_mapping.hpp"
+#include "panel15.hpp"
 
 namespace engine::keypad
 {
@@ -166,6 +167,12 @@ namespace engine::keypad
     std::map<TABLE, code_table_t> Mapping::mapping_tables = {
         {TABLE::CUSTOM, custom_value},
         {TABLE::EMBEDDED_BOX, embedded_box},
+        {TABLE::PANEL15, [] {
+            code_table_t table;
+            for (auto key : panel15::keys)
+                table.push_back({key::Code::SINGLE, 0, 0, {key.usage}});
+            return table;
+        }()},
         {TABLE::FUNCTIONAL, functional_value},
         {TABLE::MULTIMEDIA, multimedia_value},
         {TABLE::NAVIGATION, navigation_value},
@@ -209,6 +216,8 @@ namespace engine::keypad
         const keypad::code_table_t &current_table = static_cast<const keypad::code_table_t>(get_table_content());
         const uint8_t key_index = static_cast<const uint8_t>(_identifier);
 
+        if (key_index >= current_table.size())
+            return 0;
         const key::Code &key_item = current_table[key_index];
 
         return key_item.value[key_item.cursor];

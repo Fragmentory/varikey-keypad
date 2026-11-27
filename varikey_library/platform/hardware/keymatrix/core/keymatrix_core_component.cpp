@@ -46,7 +46,7 @@ namespace platform::hardware
             platform::hardware::protocol_core_get_event(&state, &identifier);
 
             pico::event_t event = {
-                .identifier = static_cast<pico::event::IDENTIFIER>(identifier),
+                .switch_number = identifier,
                 .state = static_cast<pico::event::STATE>(state),
             };
 

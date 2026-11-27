@@ -71,6 +71,7 @@ namespace engine::hci
 
     enum class COMMAND : uint8_t
     {
+        CAPABILITIES_REQ = 0x30,
         BACKLIGHT_CFM = hc::BACKLIGHT_CFM_VALUE,
         BACKLIGHT_REQ = hc::BACKLIGHT_REQ_VALUE,
         DISPLAY_CFM = hc::DISPLAY_CFM_VALUE,
